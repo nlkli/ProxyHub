@@ -226,7 +226,7 @@ func TrimCommand(text string, command string) string {
 }
 
 func GetClientForUser(ctx context.Context, b *bot.Bot, userID int64) (*models.Message, error) {
-	clientText := fmt.Sprintf(`<u><i><b>🤡 Client</b></i></u>
+	clientText := fmt.Sprintf(`<u><i><b>👤 Client</b></i></u>
 
 Количество участников: <b>%d</b>`, GetUsersCount())
 

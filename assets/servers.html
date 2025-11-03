@@ -1,17 +1,65 @@
 <h2>Сервера</h2>
 
+<hr>
+
 <p>
 	По мере роста количества пользователей будут добавлятся новые сервера.
 </p>
 
-<table id="servers-table">
+<p>
+	Вы можете выбрать любой сервер из списка, ориентируясь на его текущую нагрузку и другие параметры.
+</p>
+
+<p>
+	Каждый сервер поддерживает несколько протоколов подключения. Для каждого из них может быть доступно несколько
+	адресов — они работают одинаково, но используют разные порты для лучшего распределения трафика. Можно выбрать любой
+	из них случайным образом или все сразу.
+</p>
+
+<table id="serversTable">
 	<tr>
 		<th>Name</th>
 		<th>Info</th>
 		<th>Location</th>
-		<th>Provider</th>
-		<th>Show</th>
+		<th>Status</th>
 	</tr>
 </table>
+
+<div id="serverContent">
+
+	<div class="flex-jc-sb">
+		<h3 id="serverContentName"></h3>
+		<button>следующий</button>
+	</div>
+
+	<table id="serverInfoTable" hidden>
+		<tr>
+			<th>Провайдер</th>
+			<td id="providerName"></td>
+		</tr>
+		<tr>
+			<th>Тарифный план</th>
+			<td id="tariffPlan"></td>
+		</tr>
+		<tr>
+			<th>Скорость</th>
+			<td id="speedLimit"></td>
+		</tr>
+		<tr>
+			<th>Лимит трафика</th>
+			<td id="trafficLimit"></td>
+		</tr>
+	</table>
+
+	<h3 id="serverLoadHeader" hidden>Нагрузка сервера</h3>
+
+	<div class="scale-container" id="serverLoadScaleContainer" hidden>
+		<div class="scale">
+			<div class="slider" id="serverLoadSlider" style="left: 0%"></div>
+		</div>
+		<div class="counter" id="serverLoadSliderCounter" style="font-weight: bold;">0%</div>
+	</div>
+
+</div>
 
 <button class="nextBtn" onclick="document.getElementById('get_links').click()">Далее</button>

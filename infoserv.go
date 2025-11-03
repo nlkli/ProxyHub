@@ -13,8 +13,11 @@ import (
 	"time"
 )
 
-var tsLast atomic.Int64
+var infoTsLast atomic.Int64
 var infoCache = ""
+
+var statTsLast atomic.Int64
+var statCache = ""
 
 type InfoServerParams struct {
 	Host string
@@ -90,11 +93,11 @@ func execCommand(name string, arg ...string) string {
 
 func infoHandle(w http.ResponseWriter, r *http.Request) {
 	tsNow := time.Now().Unix()
-	if tsNow-tsLast.Load() <= 3 {
+	if tsNow-infoTsLast.Load() <= 4 {
 		fmt.Fprint(w, infoCache)
 		return
 	}
-	tsLast.Store(tsNow)
+
 	infoCache = ""
 	infoCache += strings.ReplaceAll(strings.ReplaceAll(execCommand("fastfetch", "--pipe", "--structure", "separator:os:separator:host:kernel:uptime:packages:shell:de:wm:wmtheme:theme:icons:font:cpu:gpu:memory:disk:localip"), "[34C", ""), "[31C", "")
 	infoCache += execCommand("vnstat")
@@ -102,10 +105,18 @@ func infoHandle(w http.ResponseWriter, r *http.Request) {
 	infoCache += execCommand("vnstat", "-hg")
 	infoCache += execCommand("vnstat", "-5")
 
+	infoTsLast.Store(tsNow)
+
 	fmt.Fprint(w, infoCache)
 }
 
 func statHandle(w http.ResponseWriter, r *http.Request) {
+	tsNow := time.Now().Unix()
+	if tsNow-statTsLast.Load() <= 12 {
+		fmt.Fprint(w, statCache)
+		return
+	}
+
 	exc := execCommand("vnstat", "--json", "d", "30")
 	if exc == "" {
 		http.Error(w, "exec command error", http.StatusBadRequest)
@@ -148,7 +159,10 @@ func statHandle(w http.ResponseWriter, r *http.Request) {
 
 	b, _ := json.Marshal(&result)
 
-	fmt.Fprint(w, string(b))
+	statCache = string(b)
+	statTsLast.Store(tsNow)
+
+	fmt.Fprint(w, statCache)
 }
 
 func rawStatHandle(w http.ResponseWriter, r *http.Request) {
