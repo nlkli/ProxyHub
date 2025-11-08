@@ -12,10 +12,13 @@ import (
 var serverFullExternalURL string
 
 type ServerParams struct {
-	Dir    string
-	Host   string
-	Port   int
-	Prefix string
+	Dir     string
+	Host    string
+	Port    int
+	Proto   string
+	KeyFile string
+	CrtFile string
+	Prefix  string
 }
 
 func RunServer(ctx context.Context, stop context.CancelFunc, params *ServerParams) {
@@ -27,8 +30,8 @@ func RunServer(ctx context.Context, stop context.CancelFunc, params *ServerParam
 		http.ServeFile(w, r, "index.html")
 	})
 
-	mux.HandleFunc(params.Prefix+"/servers", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "servers.json")
+	mux.HandleFunc(params.Prefix+"/proxyservers", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "proxyservers.json")
 	})
 
 	assetsPath := filepath.Join(params.Dir, "assets")
@@ -42,7 +45,7 @@ func RunServer(ctx context.Context, stop context.CancelFunc, params *ServerParam
 	}
 
 	log.Printf("Server running [LOCAL] at http://127.0.0.1:%d%s\n", params.Port, params.Prefix)
-	serverFullExternalURL = fmt.Sprintf("http://%s:%d%s", ipAddr, params.Port, params.Prefix)
+	serverFullExternalURL = fmt.Sprintf("http://%s:%d%s", PublicIPAddr, params.Port, params.Prefix)
 	log.Printf("Server running [GLOBAL] at %s\n", serverFullExternalURL)
 
 	go func() {
@@ -56,7 +59,14 @@ func RunServer(ctx context.Context, stop context.CancelFunc, params *ServerParam
 		}
 	}()
 
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	var err error
+	if params.Proto == "https" {
+		err = server.ListenAndServeTLS(params.CrtFile, params.KeyFile)
+	} else {
+		err = server.ListenAndServe()
+	}
+
+	if err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Server failed: %v", err)
 	}
 

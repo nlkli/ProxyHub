@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -15,109 +14,137 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var ipAddr string
-
-const (
-	DEFAULT_MODE        = 1
-	DEFAULT_DIR         = "."
-	DEFAULT_HOST        = "0.0.0.0"
-	DEFAULT_PORT        = 8090
-	DEFAULT_IPORT       = 8091
-	DEFAULT_ROOT_PREFIX = ""
+var (
+	PublicIPAddr string
 )
 
-type ProxyServer struct {
-	Name         string     `json:"name"`
-	ID           string     `json:"id"`
-	Location     string     `json:"location"`
-	ProviderName string     `json:"providerName"`
-	ProviderLink string     `json:"providerLink"`
-	Plan         string     `json:"plan"`
-	SpeedRate    string     `json:"speedRate"`
-	Limit        string     `json:"limit"`
-	InfoLink     string     `json:"infoLink"`
-	Proxy        ProxyLinks `json:"proxy"`
+const (
+	defaultMode       = 1
+	defaultDir        = "."
+	defaultHost       = "0.0.0.0"
+	defaultPort       = 8090
+	defaultPoroto     = "http"
+	defaultInfoPort   = 8091
+	defaultRootPrefix = ""
+)
+
+type Config struct {
+	Dir      string
+	Host     string
+	Port     int
+	Prefix   string
+	Proto    string
+	KeyFile  string
+	CertFile string
+	InfoHost string
+	InfoPort int
+	Mode     int
 }
 
-type ProxyLinks struct {
-	Vless []string `json:"vless"`
-	Http  []string `json:"http"`
-	Socks []string `json:"socks"`
-}
-
-func main() {
-	err := godotenv.Load()
-	if err != nil {
-		envfile, err := os.Create(".env")
-		if err != nil {
-			log.Fatalf("Failed to create env file: %v", err)
-		}
-		envfile.WriteString(`TELEGRAM_BOT_TOKEN=0
-TELEGRAM_BOT_OWNER_ID=0
-TELEGRAM_BOT_ACCESS_CODE=0`)
+func loadEnv() {
+	if err := godotenv.Load(); err != nil {
+		createDefaultEnv()
 		log.Fatal("Error loading .env file")
 	}
+}
 
-	fmt.Println(flag.Args())
+func createDefaultEnv() {
+	envFile, err := os.Create(".env")
+	if err != nil {
+		log.Fatalf("Failed to create env file: %v", err)
+	}
+	defer envFile.Close()
 
-	dir := flag.String("dir", DEFAULT_DIR, "server directory")
-	host := flag.String("host", DEFAULT_HOST, "server host")
-	port := flag.Int("port", DEFAULT_PORT, "server port")
-	prefix := flag.String("prefix", DEFAULT_ROOT_PREFIX, "server root prefix")
+	envFile.WriteString(`TELEGRAM_BOT_TOKEN=0
+TELEGRAM_BOT_OWNER_ID=0
+TELEGRAM_BOT_ACCESS_CODE=0`)
+}
 
-	ihost := flag.String("ihost", DEFAULT_HOST, "info server host")
-	iport := flag.Int("iport", DEFAULT_IPORT, "info server port")
-
-	mode := flag.Int("mode", DEFAULT_MODE, "mode")
-
-	flag.Parse()
-
+func getPublicIP() string {
 	resp, err := http.Get("https://ifconfig.me/ip")
 	if err != nil {
-		log.Fatalf("Failed to get ifconfig request: %v", err)
+		log.Fatalf("Failed to get public IP: %v", err)
 	}
 	defer resp.Body.Close()
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("Failed to read body: %v", err)
+		log.Fatalf("Failed to read IP response: %v", err)
 	}
 
-	ipAddr = strings.TrimSpace(string(data))
+	return strings.TrimSpace(string(data))
+}
+
+func parseFlags() Config {
+	dir := flag.String("dir", defaultDir, "server directory")
+	host := flag.String("host", defaultHost, "server host")
+	port := flag.Int("port", defaultPort, "server port")
+	prefix := flag.String("prefix", defaultRootPrefix, "server root prefix")
+	proto := flag.String("proto", defaultPoroto, "server protocol http/https")
+	keyFile := flag.String("skey", "server.key", "server key file")
+	certFile := flag.String("scrt", "server.crt", "server cert file")
+	infoHost := flag.String("ihost", defaultHost, "info server host")
+	infoPort := flag.Int("iport", defaultInfoPort, "info server port")
+	mode := flag.Int("mode", defaultMode, "mode")
+
+	flag.Parse()
+
+	return Config{
+		Dir:      *dir,
+		Host:     *host,
+		Port:     *port,
+		Prefix:   *prefix,
+		Proto:    *proto,
+		KeyFile:  *keyFile,
+		CertFile: *certFile,
+		InfoHost: *infoHost,
+		InfoPort: *infoPort,
+		Mode:     *mode,
+	}
+}
+
+func getTelegramConfig() (string, string, string) {
+	token := os.Getenv("TELEGRAM_BOT_TOKEN")
+	ownerID := os.Getenv("TELEGRAM_BOT_OWNER_ID")
+	accessCode := os.Getenv("TELEGRAM_BOT_ACCESS_CODE")
+
+	if token == "" || ownerID == "" || accessCode == "" {
+		log.Fatal("Telegram environment variables not set")
+	}
+
+	return token, ownerID, accessCode
+}
+
+func main() {
+	loadEnv()
+	config := parseFlags()
+	PublicIPAddr = getPublicIP()
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	go RunInfoServer(ctx, stop, &InfoServerParams{
-		Host: *ihost,
-		Port: *iport,
+		Host: config.InfoHost,
+		Port: config.InfoPort,
 	})
 
-	if *mode > 1 {
-		telebotToken := os.Getenv("TELEGRAM_BOT_TOKEN")
-		if telebotToken == "" {
-			log.Fatal("TELEGRAM_BOT_TOKEN environment variable is not set")
-		}
-		telebotOwnerID := os.Getenv("TELEGRAM_BOT_OWNER_ID")
-		if telebotOwnerID == "" {
-			log.Fatal("TELEGRAM_BOT_OWNER_ID environment variable is not set")
-		}
-		telebotAccessCode := os.Getenv("TELEGRAM_BOT_ACCESS_CODE")
-		if telebotAccessCode == "" {
-			log.Fatal("TELEGRAM_BOT_ACCESS_CODE environment variable is not set")
-		}
+	if config.Mode > 1 {
+		token, ownerID, accessCode := getTelegramConfig()
 
 		go RunServer(ctx, stop, &ServerParams{
-			Dir:    *dir,
-			Host:   *host,
-			Port:   *port,
-			Prefix: *prefix,
+			Dir:     config.Dir,
+			Host:    config.Host,
+			Port:    config.Port,
+			Proto:   config.Proto,
+			KeyFile: config.KeyFile,
+			CrtFile: config.CertFile,
+			Prefix:  config.Prefix,
 		})
 
 		go RunTelebot(ctx, stop, &TelebotParams{
-			Token:         telebotToken,
-			OwnerID:       telebotOwnerID,
-			AccessCode:    telebotAccessCode,
+			Token:         token,
+			OwnerID:       ownerID,
+			AccessCode:    accessCode,
 			WebApp:        "https://core.telegram.org/",
 			UsersFilePath: "telebotusers.db",
 		})

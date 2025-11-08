@@ -12,6 +12,8 @@ pkg/
 *.tmp
 *.old
 *.db
+*.key
+*.crt
 
 .env
-servers.json
+proxyservers.json

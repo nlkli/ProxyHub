@@ -16,20 +16,17 @@
 	из них случайным образом или все сразу.
 </p>
 
-<table id="serversTable">
-	<tr>
-		<th>Name</th>
-		<th>Info</th>
-		<th>Location</th>
-		<th>Status</th>
-	</tr>
+<table id="serversTable" style="margin-bottom: 14px;">
 </table>
 
 <div id="serverContent">
 
-	<div class="flex-jc-sb">
-		<h3 id="serverContentName"></h3>
-		<button>следующий</button>
+	<div id="serverHeaderContainer">
+		<hr>
+		<div class="flex-jc-sb">
+			<h3 id="serverContentName"></h3>
+			<button id="nextServerBtn" style="padding: 3px;"></button>
+		</div>
 	</div>
 
 	<table id="serverInfoTable" hidden>
@@ -58,6 +55,10 @@
 			<div class="slider" id="serverLoadSlider" style="left: 0%"></div>
 		</div>
 		<div class="counter" id="serverLoadSliderCounter" style="font-weight: bold;">0%</div>
+	</div>
+
+	<div id="serverProxyList">
+
 	</div>
 
 </div>

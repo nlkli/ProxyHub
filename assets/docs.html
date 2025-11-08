@@ -1,6 +1,6 @@
 <div class="flex-jc-sb">
 	<h2>Документация</h2>
-	<span style="font-size: 13px;">Oct 28 12:08 MSK 2025</span>
+	<span style="font-size: 13px;">Nov 8 21:34:53 MSK 2025</span>
 </div>
 
 <hr>
@@ -13,8 +13,8 @@
 	<li><a href="#DocVLESSReality">VLESS Reality</a></li>
 	<li><a href="#DocConnXray">Как подключить Xray</a></li>
 	<li><a href="#DocClientsForConn">Клиенты для подключения</a></li>
+	<li><a href="#DocXrayRouting">Xray маршрутизация</a></li>
 	<li><a href="#DocSmartProxy">SmartProxy</a></li>
-	<li>Продвинутый уровень</li>
 </ul>
 
 <hr>
@@ -22,7 +22,9 @@
 <h3 id="DocIntroduction">Введение</h3>
 
 <p>
-	<b>ProxyHub</b> предоставляет доступ к серверам, использующим различные сетевые протоколы для <a href="https://ru.wikipedia.org/wiki/%D0%9F%D1%80%D0%BE%D0%BA%D1%81%D0%B8-%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80">проксирования</a> и
+	<b>ProxyHub</b> предоставляет доступ к серверам, использующим различные сетевые протоколы для <a
+		href="https://ru.wikipedia.org/wiki/%D0%9F%D1%80%D0%BE%D0%BA%D1%81%D0%B8-%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80">проксирования</a>
+	и
 	безопасной
 	передачи трафика. Выбор протокола определяет, как данные передаются, шифруются и маршрутизируются между клиентом и
 	сервером.
@@ -41,13 +43,15 @@
 		<b>HTTP Proxy</b> — универсальный прокси для работы с веб-трафиком и совместимости с большинством приложений;
 	</li>
 	<li>
-		<a href="https://ru.wikipedia.org/wiki/SOCKS"><b>SOCKS5 Proxy</b></a> — гибкий протокол для передачи любых типов данных с поддержкой аутентификации и минимальной задержкой.
+		<b><a href="https://ru.wikipedia.org/wiki/SOCKS">SOCKS5 Proxy</a></b> — гибкий протокол для передачи любых типов
+		данных с поддержкой аутентификации и минимальной задержкой.
 	</li>
 </ul>
 
 <p>
-	Эти три протокола покрывают основные сценарии использования: от безопасного серфинга в интернете до подключения
-	приложений, требующих прокси. Выбор подходящего протокола зависит от конкретных задач и предпочтений пользователя.
+	Эти три протокола покрывают основные сценарии использования: от обхода географических ограничений и смены IP-адреса
+	до подключения приложений, требующих прокси. Выбор подходящего протокола зависит от конкретных задач и предпочтений
+	пользователя.
 </p>
 
 <p>
@@ -60,17 +64,20 @@
 
 <hr>
 
-<p><a href="https://xtls.github.io/ru/" target="_blank"><b>Xray-core</b></a> — это мощный сетевой инструмент с открытым исходным кодом, который используется для проксирования трафика и обхода интернет-ограничений (интернет-цензуры).
+<p><b><a href="https://xtls.github.io/ru/" target="_blank">Xray-core</a></b> — это мощный сетевой инструмент с открытым
+	исходным кодом, который используется для проксирования трафика и обхода интернет-ограничений (интернет-цензуры).
 	Xray-core поддерживает широкий спектр протоколов, что делает его универсальным инструментом для разных задач.
 </p>
 
 <p>
-	Изначально разработан для эффективного обхода систем интернет-цензуры в странах с жесткими ограничениями, таких как Россия, Иран и Китай.
+	Изначально разработан для эффективного обхода систем интернет-цензуры в странах с жесткими ограничениями, таких как
+	Россия, Иран и Китай.
 </p>
 
 <p>Полезные ресурсы:</p>
 <ul>
-	<li><a href="https://www.youtube.com/watch?v=aqlTcGhPEiM">Что такое V2Ray за 8 минут</a> — Отличный видео ролик на YouTube который все объесняет.</li>
+	<li><a href="https://www.youtube.com/watch?v=aqlTcGhPEiM">Что такое V2Ray за 8 минут</a> — Отличный видео ролик на
+		YouTube который все объесняет.</li>
 	<li><a href="https://xtls.github.io/ru/" target="_blank">Официальная документация
 			Xray-core (Project X)</a> — руководство и справочные материалы на русском языке.</li>
 	<li><a href="https://github.com/XTLS/Xray-core" target="_blank">Репозиторий на GitHub</a> — исходный код, релизы и
@@ -87,19 +94,26 @@
 <hr>
 
 <p>
-	ProxyHub использует VLESS Reality в качестве основного протокола из <a href="https://xtls.github.io/ru/" target="_blank"><b>Xray-core</b></a>.
+	ProxyHub использует VLESS Reality в качестве основного протокола из <b><a href="https://xtls.github.io/ru/"
+			target="_blank">Xray-core</a></b>.
 </p>
 
 <p>
-	Протокол VLESS остается незамеченным, потому что он маскирует весь свой трафик под обычный зашифрованный интернет-трафик (HTTPS), который используют все легальные веб-сайты. Таким образом его практически невозможно отследить и заблокировать.
+	Протокол VLESS остается незамеченным, потому что он маскирует весь свой трафик под обычный зашифрованный
+	интернет-трафик (HTTPS), который используют все легальные веб-сайты. Таким образом его практически невозможно
+	отследить и заблокировать.
 </p>
 
 <p>
-	<b>REALITY</b> — это дополнительная функция обфускации (маскировки) для протокола VLESS, которая выводит скрытность на новый уровень. Она позволяет серверу имитировать реальный, легитимный веб-сайт, до которого уже доверяют системы цензуры.
+	<b>REALITY</b> — это дополнительная функция обфускации (маскировки) для протокола VLESS, которая выводит скрытность
+	на новый уровень. Она позволяет серверу имитировать реальный, легитимный веб-сайт, до которого уже доверяют системы
+	цензуры.
 </p>
 
 <p>
-	Ваш интернет-трафик полностью шифруется с помощью того же стандартного протокола <a href="https://ru.wikipedia.org/wiki/TLS_1.3"><b>TLS 1.3</b></a>, который используют все безопасные веб-сайты по HTTPS.
+	Ваш интернет-трафик полностью шифруется с помощью того же стандартного протокола <b><a
+			href="https://ru.wikipedia.org/wiki/TLS_1.3">TLS 1.3</a></b>, который используют все безопасные веб-сайты по
+	HTTPS.
 </p>
 
 <h3 id="DocConnXray">Как подключить Xray VLESS Reality</h3>
@@ -107,7 +121,8 @@
 <hr>
 
 <p>
-	Для подключения нужен установленный клиент с поддержкой ядра <a href="https://github.com/XTLS/Xray-core">Xray-core</a> и специальная ссылка подключения.
+	Для подключения нужен установленный клиент с поддержкой ядра <a
+		href="https://github.com/XTLS/Xray-core">Xray-core</a> и специальная ссылка подключения.
 	Пример ссылки:
 </p>
 
@@ -119,7 +134,9 @@
 </p>
 
 <p>
-	Алгоритм подключения для всех клиентов (приложений) примерно одинаков. Вам нужно импортировать ссылку для подключения в клиент, после чего приложение автоматически настраивает все параметры, и вы можете подключиться к защищенному интернету.
+	Алгоритм подключения для всех клиентов (приложений) примерно одинаков. Вам нужно импортировать ссылку для
+	подключения в клиент, после чего приложение автоматически настраивает все параметры, и вы можете начать пользоваться
+	интернетом через прокси-сервер.
 </p>
 
 <h4>Важно</h4>
@@ -133,17 +150,21 @@
 <hr>
 
 <p>
-	Существуют различные клиентские приложения для всех популярных операционных систем. В этом руководстве будут рассмотрены
+	Существует множество клиентских приложений для всех популярных операционных систем. В данном руководстве будут
+	рассмотрены только те, которыми пользуюсь лично я. Вы можете выбрать для подключения любой другой подходящий клиент.
 </p>
 
 <h4>Для мобильных устройств</h4>
 
 <div class="flex-jc-sb">
 	<ul>
-		<li><p><b>iPhone / iOS</b>: <a href="https://apps.apple.com/kz/app/v2raytun/id6476628951" target="_blank"><b>v2RayTun (App Store)</b></a>
-		</p></li>
-		<li><b>Android</b>: <a href="https://play.google.com/store/apps/details?id=com.v2raytun.android&hl=ru"
-				target="_blank"><b>v2RayTun (Google Play)</b></a></li>
+		<li>
+			<p><b>iPhone / iOS</b>: <b><a href="https://apps.apple.com/kz/app/v2raytun/id6476628951"
+						target="_blank">v2RayTun (App Store)</a></b>
+			</p>
+		</li>
+		<li><b>Android</b>: <b><a href="https://play.google.com/store/apps/details?id=com.v2raytun.android&hl=ru"
+					target="_blank">v2RayTun (Google Play)</a></b></li>
 	</ul>
 	<a href="https://v2raytun.com/" target="_blank">
 		<img src="./assets/v2raytunlogo.png" alt="" width="64px" class="border1 shad"
@@ -156,8 +177,8 @@
 
 <hr>
 
-<p>1. Установите приложение v2RayTun.</p>
-<p>2. Добавьте ссылку VLESS Reality через функцию "Импорт ссылки".</p>
+<p>1. Установите приложение <b>v2RayTun</b>.</p>
+<p>2. Добавьте ссылку VLESS Reality через функцию <b>"Импорт ссылки"</b>.</p>
 <p>3. Включите подключение и проверьте соединение.</p>
 
 <div class="video-con">
@@ -169,22 +190,37 @@
 
 <hr>
 
+<h4>Для ПК (v2rayN)</h4>
+
+<p>
+	v2rayN — кроссплатформенный клиент для ПК. Скачать:
+</p>
+
 <div class="flex-jc-sb">
-	<h4>Для ПК</h4>
+	<ul>
+		<li><b><a href="https://en.v2rayn.org/download/">С официального сайта</a></b></li>
+		<li>
+			<p><b><a href="https://github.com/2dust/v2rayN/releases">GitHub Releases</a></b></p>
+		</li>
+	</ul>
 	<a href="https://github.com/2dust/v2rayN" target="_blank">
 		<img src="./assets/v2raynlogo.png" alt="" width="56px" class="border1 shad"
 			style="opacity: 0.9; margin-right: 18px;">
 	</a>
 </div>
 
-<p>Рекомендуемый клиент: <a href="https://github.com/2dust/v2rayN/releases" target="_blank">v2rayN GitHub releases</a>
-	или <a href="https://en.v2rayn.org/download/" target="_blank">v2rayN org</a></p>
-
 <h4>Краткая инструкция для ПК</h4>
+
+<hr>
 
 <div class="image-con">
 	<img src="./assets/v2rayn1.png" alt="" class="mimg">
 </div>
+
+<p>
+	Чтобы добавить конфигурацию Xray VLESS Reality, скопируйте ссылку подключения и импортируйте её в программу.
+</p>
+
 <div class="image-con" style="padding: 0 21px">
 	<img src="./assets/v2rayn2.png" alt="" class="mimg border1 shad">
 </div>
@@ -192,9 +228,77 @@
 	<img src="./assets/v2rayn3.png" alt="" class="mimg border1 shad">
 </div>
 
+<h3 id="DocXrayRouting">Xray маршрутизация</h3>
+
+<hr>
+
+<p>
+	<b><a href="https://xtls.github.io/ru/" target="_blank">Xray-core</a></b> поддерживает мощную систему маршрутизации,
+	которая позволяет тонко настраивать, какой именно трафик будет проходить через прокси-сервер, а какой — напрямую.
+</p>
+
+<h4>Что такое маршрутизация в Xray?</h4>
+
+<p>
+	Это набор правил, которые определяют судьбу исходящего сетевого запроса в зависимости от его характеристик, например <a href="https://ru.wikipedia.org/wiki/%D0%94%D0%BE%D0%BC%D0%B5%D0%BD%D0%BD%D0%BE%D0%B5_%D0%B8%D0%BC%D1%8F"  target="_blank">доменного имеми</a> или геолокации IP-адреса.
+</p>
+
+<p>
+	Вы можете создать собственную логику маршрутизации. Например, направить через прокси только трафик к заблокированным или иностранным ресурсам, а весь локальный российский трафик (*.ru) пускать напрямую. Это значительно ускоряет работу и снижает нагрузку на прокси-сервер. Дополнительно есть возможность блокировать рекламные домены, что позволит избавиться от нежелательной рекламы. Это очень гибкая система, которую можно настроить под себя.
+</p>
+
+<p>
+	Подробнее о настройки маршрутизации — <b><a href="https://xtls.github.io/ru/config/routing.html#routingobject" target="_blank">routingobject</a></b>
+</p>
+
+<p>
+	В клиентах, таких как <b><a href="https://github.com/2dust/v2rayN" target="_blank">v2rayN</a></b> или <b><a href="https://v2raytun.com/" target="_blank">v2RayTun</a></b>, маршрутизация настраивается через предустановленные или пользовательские конфигурации.
+</p>
+
+<h4 style="text-align: right; margin: 0">v2rayN</h4>
+
+<div class="image-con" style="padding: 14px 21px">
+	<img src="./assets/v2raynrouting.png" alt="" width="560px" class="mimg border1 shad">
+</div>
+
+<h4 style="text-align: right; margin: 0">v2RayTun</h4>
+
+<div class="image-con" style="padding: 14px 21px">
+	<img src="./assets/v2raytunrouting.png" alt="" width="364px; border-radius: 36px" class="mimg border1 shad">
+</div>
+
 <h3 id="DocSmartProxy">SmartProxy</h3>
 
 <hr>
+
+<p>
+	<b>SmartProxy</b> — это удобное расширение для браузера, которое позволяет настроить прокси-соединение. В отличие от
+	клиентов Xray, оно использует протокол <b>HTTP Proxy</b>.
+</p>
+
+<p>
+	Ключевое преимущество этого подхода — изоляция трафика. Проксирование работает только в рамках браузера, не
+	затрагивая системные запросы или трафик других приложений.
+</p>
+
+<p>
+	Ссылка для подключения к HTTP Proxy имеет формат:
+</p>
+
+<code><pre>http://username:password@host:port</pre></code>
+
+<p>
+	Где:<br>
+	<b>username</b> — ваше имя пользователя,<br>
+	<b>password</b> — пароль,<br>
+	<b>host</b> — IP-адрес или домен сервера,<br>
+	<b>port</b> — порт для подключения.
+</p>
+
+<p>Пример реальной ссылки из системы:</p>
+<code><pre>http://user1:g0wXy1MRH0Jz@185.223.82.21:51520<span class="red">(not valid just an example)</span></pre></code>
+
+<p>Добавить расширение:</p>
 
 <div class="flex-jc-sb">
 	<ul>
@@ -228,11 +332,33 @@
 <div class="image-con" style="padding: 14px 21px">
 	<img src="./assets/smartproxy1.png" alt="" class="mimg border1 shad">
 </div>
+
+<p>
+	Можно добавить прокси сервера используя специальный текстовый формат.
+</p>
+
 <div class="image-con" style="padding: 14px 21px">
 	<img src="./assets/smartproxy2.png" alt="" class="mimg border1 shad">
 </div>
+
+<p>
+	Или через форму добавления сервера с указанием параметров вручную.
+</p>
+
 <div class="image-con" style="padding: 14px 21px">
 	<img src="./assets/smartproxy3.png" alt="" class="mimg border1 shad">
 </div>
 
-<button class="nextBtn" onclick="document.getElementById('get_servers').click()">Далее</button>
+<p>
+	Незабудте сохранить изменения.
+</p>
+
+<p>
+	В <b>SmartProxy</b> так же возможно настроить подобие маршрутизации. В быстром меню расширения можно отметить домены, которые используют или не используют прокси (зависит от того каком режиме вы находитесь).
+</p>
+
+<div class="image-con" style="padding: 14px 21px">
+	<img src="./assets/smartproxyrouting.png" alt="" class="mimg border1 shad">
+</div>
+
+<button class="nextBtn" onclick="document.getElementById('get_servers').click()">Сервера →</button>

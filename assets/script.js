@@ -1,5 +1,6 @@
-const sectionsLoad = {};
-let servers;
+
+const loadedSections = {};
+let serverList = [];
 
 function parseProxyUrl(url) {
 	const urlObj = new URL(url);
@@ -11,257 +12,234 @@ function parseProxyUrl(url) {
 	};
 }
 
-function setServerLoad(value) {
-	const slider = document.getElementById("serverLoadSlider");
-	const counter = document.getElementById("serverLoadSliderCounter");
-	const percent = Math.min(100, Math.max(0, value));
-
-	slider.style.left = percent + '%';
-	counter.textContent = percent + '%';
+function updateServerLoad(value) {
+	const slider = document.getElementById('serverLoadSlider');
+	const counter = document.getElementById('serverLoadSliderCounter');
+	const numeric = Math.max(0, Math.min(100, Number(value) || 0));
+	slider.style.left = Math.round(numeric) + '%';
+	counter.textContent = numeric.toFixed(1) + '%';
 }
 
-function showServer(index) {
-	document.getElementById("serverContentName").innerText = servers[index].name;
-	const serverContent = document.getElementById("serverContent");
+function createCopyButton(textProvider) {
+	const btn = document.createElement('button');
+	btn.className = 'copyBtn'; btn.type = 'button';
+	btn.textContent = '📋';
+	btn.addEventListener('click', () => navigator.clipboard.writeText(textProvider()));
+	return btn;
+}
 
-	const providerName = document.getElementById("providerName");
-	const tariffPlan = document.getElementById("tariffPlan");
-	const speedLimit = document.getElementById("speedLimit");
-	const trafficLimit = document.getElementById("trafficLimit");
+function appendProxyBlock(container, title, items, formatter = (v) => v) {
+	if (!items || items.length === 0) return;
+	const header = document.createElement('h3');
+	header.innerText = title;
+	container.appendChild(header);
+	container.appendChild(document.createElement('hr'));
+	items.forEach(item => {
+		const row = document.createElement('p');
+		row.className = 'flex-jc-sb';
+		const code = document.createElement('code');
+		const pre = document.createElement('pre');
+		pre.innerText = formatter(item);
+		code.appendChild(pre);
+		row.appendChild(code);
+		row.appendChild(createCopyButton(() => pre.innerText));
+		container.appendChild(row);
+	});
+}
 
-	const a = document.createElement("a");
-	a.href = servers[index].providerLink;
-	a.innerText = servers[index].providerName;
-	providerName.appendChild(a);
+function renderSmartProxyBlock(container, httpList, serverName) {
+	if (!httpList || httpList.length === 0) return;
+	const header = document.createElement('h3');
+	header.innerText = 'SmartProxy Servers';
+	container.appendChild(header);
+	container.appendChild(document.createElement('hr'));
+	let content = '[SmartProxy Servers]\n';
+	httpList.forEach(h => {
+		try {
+			const info = parseProxyUrl(h);
+			content += `${info.host}:${info.port} [HTTP] [${serverName}_${info.username}] [${info.username}] [${info.password}]\n`;
+		} catch (e) { }
+	});
+	const row = document.createElement('p');
+	row.className = 'flex-jc-sb';
+	const code = document.createElement('code');
+	const pre = document.createElement('pre');
+	pre.innerText = content;
+	code.appendChild(pre);
+	row.appendChild(code);
+	row.appendChild(createCopyButton(() => pre.innerText));
+	container.appendChild(row);
+}
 
-	tariffPlan.innerText = servers[index].plan;
-	speedLimit.innerText = servers[index].speedRate;
-	trafficLimit.innerText = servers[index].limit;
+async function showServer(index) {
+	document.querySelectorAll('#serversTable button').forEach(b => b.disabled = false);
+	const buttons = document.querySelectorAll('#serversTable button');
+	const targetBtn = Array.from(buttons).find(b => Number(b.dataset.index) === index);
+	if (targetBtn) targetBtn.disabled = true;
+	const nextBtn = document.getElementById('nextServerBtn');
+	const nextIndex = (index + 1) % serverList.length;
+	nextBtn.textContent = serverList.length > 0 ? `→ ${serverList[nextIndex].name}` : '';
+	nextBtn.onclick = () => showServer(nextIndex);
+	nextBtn.disabled = serverList.length <= 1;
+	document.getElementById('serverContentName').textContent = serverList[index].name || '';
 
-	document.getElementById("serverInfoTable").hidden = false;
-	document.getElementById("serverLoadHeader").hidden = false;
-	document.getElementById("serverLoadScaleContainer").hidden = false;
-	fetch("")
-		.then(res => res.text())
-		.then(stat => {
-			const statData = JSON.parse(stat);
-			const day30Tx = statData["day30Tx"] || 0;
-			const day30Rx = statData["day30Rx"] || 0;
-			const total = day30Tx + day30Rx;
+	const providerNameEl = document.getElementById('providerName');
+	const tariffPlanEl = document.getElementById('tariffPlan');
+	const speedLimitEl = document.getElementById('speedLimit');
+	const trafficLimitEl = document.getElementById('trafficLimit');
+
+	const providerLink = document.createElement('a');
+	providerLink.href = serverList[index].providerLink || '#';
+	providerLink.innerText = serverList[index].providerName || '';
+	providerNameEl.innerHTML = '';
+	providerNameEl.appendChild(providerLink);
+
+	tariffPlanEl.textContent = serverList[index].plan || '';
+	speedLimitEl.textContent = serverList[index].speedRate || '';
+	trafficLimitEl.textContent = serverList[index].limit || '';
+
+	document.getElementById('serverInfoTable').hidden = false;
+	document.getElementById('serverLoadHeader').hidden = false;
+	document.getElementById('serverLoadScaleContainer').hidden = false;
+	document.getElementById('serverHeaderContainer').hidden = false;
+
+	(async () => {
+		try {
+			const res = await fetch(`${serverList[index].infoLink}/stat`);
+			if (!res.ok) throw new Error('stat fetch failed');
+			const stat = await res.json();
+			const day30Tx = stat.day30Tx || 0;
+			const day30Rx = stat.day30Rx || 0;
+			const total = (day30Tx * 0.7) + day30Rx;
 			const totalGb = total / (1024 * 1024 * 1024);
 			const percentage = (totalGb / 3100.0) * 100;
-			const roundedPercentage = percentage.toFixed(2);
-			setServerLoad(roundedPercentage);
-		})
+			updateServerLoad(percentage.toFixed(1));
+		} catch (e) {
+			updateServerLoad(0);
+		}
+	})();
 
-	if (servers[index]["proxy"]["vless"] && servers[index]["proxy"]["vless"].length > 0) {
-		const vlessHeader = document.createElement("h3");
-		vlessHeader.innerText = "Xray VLESS Reality";
-
-		serverContent.appendChild(vlessHeader);
-		serverContent.appendChild(document.createElement("hr"))
-
-		servers[index]["proxy"]["vless"].forEach((v) => {
-			const p = document.createElement("p");
-			p.classList.add("flex-jc-sb");
-			const code = document.createElement("code");
-			const pre = document.createElement("pre");
-			pre.innerText = v;
-			const copyBtn = document.createElement("button");
-			copyBtn.innerText = "📋";
-			copyBtn.className = "copyBtn";
-			copyBtn.onclick = () => {
-				navigator.clipboard.writeText(pre.innerText);
-			};
-			code.appendChild(pre);
-			p.appendChild(code);
-
-			p.appendChild(copyBtn);
-			serverContent.appendChild(p);
-		})
-	}
-
-	if (servers[index]["proxy"]["http"] && servers[index]["proxy"]["http"].length > 0) {
-		const httpHeader = document.createElement("h3");
-		httpHeader.innerText = "HTTP Proxy";
-
-		serverContent.appendChild(httpHeader);
-		serverContent.appendChild(document.createElement("hr"))
-
-		servers[index]["proxy"]["http"].forEach((v) => {
-			const p = document.createElement("p");
-			p.classList.add("flex-jc-sb");
-			const code = document.createElement("code");
-			const pre = document.createElement("pre");
-			pre.innerText = v;
-			const copyBtn = document.createElement("button");
-			copyBtn.innerText = "📋";
-			copyBtn.className = "copyBtn";
-			copyBtn.onclick = () => {
-				navigator.clipboard.writeText(pre.innerText);
-			};
-			code.appendChild(pre);
-			p.appendChild(code);
-
-			p.appendChild(copyBtn);
-			serverContent.appendChild(p);
-		})
-	}
-
-	if (servers[index]["proxy"]["socks"] && servers[index]["proxy"]["socks"].length > 0) {
-		const socksHeader = document.createElement("h3");
-		socksHeader.innerText = "SOCKS Proxy";
-
-		serverContent.appendChild(socksHeader);
-		serverContent.appendChild(document.createElement("hr"))
-
-		servers[index]["proxy"]["socks"].forEach((v) => {
-			const p = document.createElement("p");
-			p.classList.add("flex-jc-sb");
-			const code = document.createElement("code");
-			const pre = document.createElement("pre");
-			pre.innerText = v;
-			const copyBtn = document.createElement("button");
-			copyBtn.innerText = "📋";
-			copyBtn.className = "copyBtn";
-			copyBtn.onclick = () => {
-				navigator.clipboard.writeText(pre.innerText);
-			};
-			code.appendChild(pre);
-			p.appendChild(code);
-
-			p.appendChild(copyBtn);
-			serverContent.appendChild(p);
-		})
-	}
-
-	if (servers[index]["proxy"]["http"] && servers[index]["proxy"]["http"].length > 0) {
-		const httpHeader = document.createElement("h3");
-		httpHeader.innerText = "SmartProxy Servers";
-
-		serverContent.appendChild(httpHeader);
-		serverContent.appendChild(document.createElement("hr"))
-
-		let smartProxyServers = "[SmartProxy Servers]\n";
-
-		servers[index]["proxy"]["http"].forEach((v) => {
-			try {
-				const res = parseProxyUrl(v);
-				smartProxyServers += `${res.host}:${res.port} [HTTP] [${servers[index].name}_${res.username}] [${res.username}] [${res.password}]\n`
-			} catch (_) { }
-		})
-
-		const p = document.createElement("p");
-		p.classList.add("flex-jc-sb");
-		const code = document.createElement("code");
-		const pre = document.createElement("pre");
-		pre.innerText = smartProxyServers;
-		const copyBtn = document.createElement("button");
-		copyBtn.innerText = "📋";
-		copyBtn.className = "copyBtn";
-		copyBtn.onclick = () => {
-			navigator.clipboard.writeText(pre.innerText);
-		};
-		code.appendChild(pre);
-		p.appendChild(code);
-
-		p.appendChild(copyBtn);
-		serverContent.appendChild(p);
-	}
+	const proxyContainer = document.getElementById('serverProxyList');
+	proxyContainer.innerHTML = '';
+	const proxies = serverList[index].proxy || {};
+	appendProxyBlock(proxyContainer, 'Xray VLESS Reality', proxies.vless);
+	appendProxyBlock(proxyContainer, 'HTTP Proxy', proxies.http);
+	appendProxyBlock(proxyContainer, 'SOCKS Proxy', proxies.socks);
+	renderSmartProxyBlock(proxyContainer, proxies.http, serverList[index].name || '');
 }
 
-function buildServersPage() {
-	if (!servers) return;
-	const serversTable = document.getElementById("serversTable");
+function buildServersTable() {
+	if (!serverList || !Array.isArray(serverList)) return;
+	const table = document.getElementById('serversTable');
+	table.innerHTML = `<tr>
+	<th>Name</th>
+	<th>Info</th>
+	<th>Location</th>
+	<th>Status</th>
+</tr>`;
+	serverList.forEach((s, idx) => {
+		const row = document.createElement('tr');
+		const nameTd = document.createElement('td');
+		nameTd.textContent = s.name || '';
 
-	servers.forEach((s) => {
-		const row = document.createElement("tr");
-		const name = document.createElement("td");
-		name.innerText = s.name;
+		const infoTd = document.createElement('td');
+		const infoLink = document.createElement('a');
+		infoLink.href = `${s.infoLink}/info`;
+		infoLink.target = '_blank';
+		infoLink.textContent = s.id || '';
+		infoTd.appendChild(infoLink);
 
-		const info = document.createElement("td");
-		const infoInner = document.createElement("a");
-		infoInner.href = `${s.infoLink}/info`;
-		infoInner.target = "_blank";
-		infoInner.innerText = s.id;
-		info.appendChild(infoInner);
+		const locationTd = document.createElement('td');
+		locationTd.textContent = s.location || '';
 
-		const location = document.createElement("td");
-		location.innerText = s.location;
+		const statusTd = document.createElement('td');
+		statusTd.style.textAlign = 'center';
+		fetch(`${s.infoLink}/ping`).then(res => {
+			if (res.ok) {
+				res.text().then(t => statusTd.textContent = t === 'pong' ? '🟢' : '🔴');
+			} else {
+				statusTd.textContent = '🔴';
+			}
+		}).catch(() => statusTd.textContent = '🔴');
 
-		const status = document.createElement("td");
-		status.style = "text-align: center;";
-		fetch(`${s.infoLink}/ping`)
-			.then((res) => {
-				console.log(`${s.infoLink}/ping`, res);
-				if (res.status === 200) {
-					status.innerText = "🟢";
-					res.text()
-						.then(t => {
-							if (t !== "pong") {
-								status.innerText = "🔴";
-							}
-						})
-				} else {
-					status.innerText = "🔴";
-				}
-			})
-			.catch(e => {
-				console.log(`${s.infoLink}/ping`, e);
-				status.innerText = "🔴";
-			})
+		const actionTd = document.createElement('td');
+		const btn = document.createElement('button');
+		btn.type = 'button';
+		btn.style.height = '24px';
+		btn.dataset.index = String(idx);
+		btn.textContent = 'Перейти';
+		btn.addEventListener('click', () => showServer(Number(btn.dataset.index)));
+		actionTd.appendChild(btn);
 
-		row.appendChild(name);
-		row.appendChild(info);
-		row.appendChild(location);
-		row.appendChild(status);
-
-		serversTable.appendChild(row);
+		row.appendChild(nameTd);
+		row.appendChild(infoTd);
+		row.appendChild(locationTd);
+		row.appendChild(statusTd);
+		row.appendChild(actionTd);
+		table.appendChild(row);
 	});
+	if (serverList.length > 0) showServer(0);
+}
 
-	if (servers.length > 0) {
-		showServer(0)
+function renderSection(sectionEl, html) {
+	loadedSections[sectionEl.id] = true;
+	sectionEl.innerHTML = html;
+	if (sectionEl.id === 'servers') {
+		fetch('./proxyservers').then(r => r.text()).then(t => {
+			try {
+				serverList = JSON.parse(t) || [];
+				buildServersTable();
+			} catch (e) { }
+		});
 	}
 }
 
-function drawSection(section, content) {
-	sectionsLoad[section.id] = true;
-	section.innerHTML = content;
-	if (section.id === "servers") {
-		fetch("./servers")
-			.then(res => res.text())
-			.then(data => {
-				servers = JSON.parse(data);
-				buildServersPage();
-			});
+function changePageByUrlHash() {
+	const urlHash = window.location.hash;
+	if (urlHash.startsWith("#Main")) {
+		document.getElementById('get_main').click();
+	}
+	if (urlHash.startsWith("#Docs")) {
+		document.getElementById('get_docs').click();
+	}
+	if (urlHash.startsWith("#Servers")) {
+		document.getElementById('get_servers').click();
+	}
+	const parts = urlHash.split('--');
+	if (parts.length >= 2) {
+		setTimeout(() => {
+			window.location.hash = `#${parts[1]}`;
+		}, 300);
 	}
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-	const links = document.querySelectorAll("nav a");
-	const sections = document.querySelectorAll("main section");
-	const menu = document.getElementById("menu");
-	const toggle = document.querySelector(".menu-toggle");
+document.addEventListener('DOMContentLoaded', () => {
+	const links = document.querySelectorAll('nav a');
+	const sections = document.querySelectorAll('main section');
+	const menu = document.getElementById('menu');
+	const toggle = document.querySelector('.menu-toggle');
 
 	links.forEach(link => {
-		link.addEventListener("click", e => {
+		link.addEventListener('click', e => {
 			e.preventDefault();
-			links.forEach(l => l.classList.remove("active"));
-			link.classList.add("active");
-			sections.forEach(s => s.classList.remove("active"));
+			links.forEach(l => l.classList.remove('active'));
+			link.classList.add('active');
+			sections.forEach(s => s.classList.remove('active'));
 			const section = document.getElementById(link.dataset.section);
-			if (!sectionsLoad[section.id]) {
-				fetch(`./assets/${link.dataset.section}.html`)
-					.then(res => res.text())
-					.then(content => {
-						drawSection(section, content);
-					});
+			if (!loadedSections[section.id]) {
+				fetch(`./assets/${link.dataset.section}.html`).then(res => res.text()).then(content => renderSection(section, content));
 			}
-			section.classList.add("active");
-			menu.classList.remove("open");
+			section.classList.add('active');
+			if (menu) menu.classList.remove('open');
 		});
 	});
 
-	toggle.addEventListener("click", () => menu.classList.toggle("open"));
-	document.getElementById("get_main").click();
+	if (toggle) toggle.addEventListener('click', () => menu.classList.toggle('open'));
+
+	const initial = document.getElementById('get_main');
+	if (initial) initial.click();
+
+	changePageByUrlHash();
+
+	window.addEventListener('hashchange', changePageByUrlHash);
 });

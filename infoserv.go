@@ -91,6 +91,12 @@ func execCommand(name string, arg ...string) string {
 	return string(stdout)
 }
 
+func allowCorsHeader(h http.Header) {
+	h.Set("Access-Control-Allow-Origin", "*")
+	h.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+	h.Set("Access-Control-Allow-Headers", "Content-Type")
+}
+
 func infoHandle(w http.ResponseWriter, r *http.Request) {
 	tsNow := time.Now().Unix()
 	if tsNow-infoTsLast.Load() <= 4 {
@@ -99,9 +105,7 @@ func infoHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	header := w.Header()
-	header.Set("Access-Control-Allow-Origin", "*")
-	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
-	header.Set("Access-Control-Allow-Headers", "Content-Type")
+	allowCorsHeader(header)
 
 	infoCache = ""
 	infoCache += strings.ReplaceAll(strings.ReplaceAll(execCommand("fastfetch", "--pipe", "--structure", "separator:os:separator:host:kernel:uptime:packages:shell:de:wm:wmtheme:theme:icons:font:cpu:gpu:memory:disk:localip"), "[34C", ""), "[31C", "")
@@ -123,9 +127,7 @@ func statHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	header := w.Header()
-	header.Set("Access-Control-Allow-Origin", "*")
-	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
-	header.Set("Access-Control-Allow-Headers", "Content-Type")
+	allowCorsHeader(header)
 
 	exc := execCommand("vnstat", "--json", "d", "30")
 	if exc == "" {
@@ -176,9 +178,7 @@ func statHandle(w http.ResponseWriter, r *http.Request) {
 
 func rawStatHandle(w http.ResponseWriter, r *http.Request) {
 	header := w.Header()
-	header.Set("Access-Control-Allow-Origin", "*")
-	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
-	header.Set("Access-Control-Allow-Headers", "Content-Type")
+	allowCorsHeader(header)
 
 	query := r.URL.Query()
 	mode := query.Get("mode")
@@ -216,6 +216,8 @@ func RunInfoServer(ctx context.Context, stop context.CancelFunc, params *InfoSer
 	mux.HandleFunc("/stat", statHandle)
 	mux.HandleFunc("/rawstat", rawStatHandle)
 	mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		header := w.Header()
+		allowCorsHeader(header)
 		fmt.Fprint(w, "pong")
 	})
 
@@ -226,7 +228,7 @@ func RunInfoServer(ctx context.Context, stop context.CancelFunc, params *InfoSer
 	}
 
 	log.Printf("Info server running [LOCAL] at http://127.0.0.1:%d\n", params.Port)
-	log.Printf("Info server running [GLOBAL] at http://%s:%d\n", ipAddr, params.Port)
+	log.Printf("Info server running [GLOBAL] at http://%s:%d\n", PublicIPAddr, params.Port)
 
 	go func() {
 		<-ctx.Done()
