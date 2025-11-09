@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -46,6 +45,15 @@ func RunTelebot(ctx context.Context, stop context.CancelFunc, params *TelebotPar
 		log.Fatalf("Failed to start bot: %v", err)
 	}
 
+	b.SetMyCommands(ctx, &bot.SetMyCommandsParams{
+		Commands: []models.BotCommand{
+			models.BotCommand{
+				Command:     "client",
+				Description: "👤 Клиент",
+			},
+		},
+	})
+
 	// _, err = b.SetChatMenuButton(ctx, &bot.SetChatMenuButtonParams{
 	// 	ChatID: nil,
 	// 	MenuButton: models.MenuButtonWebApp{
@@ -56,6 +64,7 @@ func RunTelebot(ctx context.Context, stop context.CancelFunc, params *TelebotPar
 	// 		},
 	// 	},
 	// })
+
 	if err != nil {
 		log.Fatalf("Failed to set chat menu button: %v", err)
 	}
@@ -324,13 +333,8 @@ func handler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		GetClientForUser(ctx, b, update.Message.Chat.ID)
 	}
 
-	strUpd, _ := json.MarshalIndent(update, "", "     ")
-	fmt.Printf("%s\n", string(strUpd))
-
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   update.Message.Text,
-	})
+	// strUpd, _ := json.MarshalIndent(update, "", "     ")
+	// fmt.Printf("%s\n", string(strUpd))
 }
 
 func сallbackHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
@@ -376,6 +380,6 @@ func сallbackHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		DelTelebotUser(update.CallbackQuery.From.ID)
 	}
 
-	strUpd, _ := json.MarshalIndent(update, "", "     ")
-	fmt.Printf("%s\n\n-------------", string(strUpd))
+	// strUpd, _ := json.MarshalIndent(update, "", "     ")
+	// fmt.Printf("%s\n\n-------------", string(strUpd))
 }

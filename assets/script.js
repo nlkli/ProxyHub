@@ -105,7 +105,7 @@ async function showServer(index) {
 
 	(async () => {
 		try {
-			const res = await fetch(`${serverList[index].infoLink}/stat`);
+			const res = await fetch(`./serverinfo/?url=${serverList[index].infoLink}/stat`);
 			if (!res.ok) throw new Error('stat fetch failed');
 			const stat = await res.json();
 			const day30Tx = stat.day30Tx || 0;
@@ -121,11 +121,11 @@ async function showServer(index) {
 
 	const proxyContainer = document.getElementById('serverProxyList');
 	proxyContainer.innerHTML = '';
-	const proxies = serverList[index].proxy || {};
-	appendProxyBlock(proxyContainer, 'Xray VLESS Reality', proxies.vless);
-	appendProxyBlock(proxyContainer, 'HTTP Proxy', proxies.http);
-	appendProxyBlock(proxyContainer, 'SOCKS Proxy', proxies.socks);
-	renderSmartProxyBlock(proxyContainer, proxies.http, serverList[index].name || '');
+	const proxyLinks = serverList[index].proxyLinks || {};
+	appendProxyBlock(proxyContainer, 'Xray VLESS Reality', proxyLinks.vless);
+	appendProxyBlock(proxyContainer, 'HTTP Proxy', proxyLinks.http);
+	appendProxyBlock(proxyContainer, 'SOCKS Proxy', proxyLinks.socks);
+	renderSmartProxyBlock(proxyContainer, proxyLinks.http, serverList[index].name || '');
 }
 
 function buildServersTable() {
@@ -144,7 +144,7 @@ function buildServersTable() {
 
 		const infoTd = document.createElement('td');
 		const infoLink = document.createElement('a');
-		infoLink.href = `${s.infoLink}/info`;
+		infoLink.href = `./serverinfo/?url=${s.infoLink}/info`;
 		infoLink.target = '_blank';
 		infoLink.textContent = s.id || '';
 		infoTd.appendChild(infoLink);
@@ -154,7 +154,7 @@ function buildServersTable() {
 
 		const statusTd = document.createElement('td');
 		statusTd.style.textAlign = 'center';
-		fetch(`${s.infoLink}/ping`).then(res => {
+		fetch(`./serverinfo/?url=${s.infoLink}/ping`).then(res => {
 			if (res.ok) {
 				res.text().then(t => statusTd.textContent = t === 'pong' ? '🟢' : '🔴');
 			} else {
