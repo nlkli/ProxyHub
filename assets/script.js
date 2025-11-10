@@ -237,7 +237,7 @@ function buildServersTable() {
 		btn.type = 'button';
 		btn.style.height = '24px';
 		btn.dataset.index = String(idx);
-		btn.textContent = 'Перейти';
+		btn.textContent = '⤵️';
 		btn.addEventListener('click', () => showServer(Number(btn.dataset.index)));
 		actionTd.appendChild(btn);
 
