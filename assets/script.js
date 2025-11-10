@@ -14,34 +14,50 @@ function parseProxyUrl(url) {
 	};
 }
 
-async function decrypt(ks, ed) {
-    const kb = new TextEncoder().encode(ks);
-    if (kb.length !== 16) {
-        throw new Error(`Key must be 16 bytes, got ${kb.length}`);
-    }
-    const binaryString = atob(ed);
-    const encrypted = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-        encrypted[i] = binaryString.charCodeAt(i);
-    }
-    const nonce = encrypted.slice(0, 12);
+// async function decrypt(ks, ed) {
+//     const kb = new TextEncoder().encode(ks);
+//     if (kb.length !== 16) {
+//         throw new Error(`Key must be 16 bytes, got ${kb.length}`);
+//     }
+//     const binaryString = atob(ed);
+//     const encrypted = new Uint8Array(binaryString.length);
+//     for (let i = 0; i < binaryString.length; i++) {
+//         encrypted[i] = binaryString.charCodeAt(i);
+//     }
+//     const nonce = encrypted.slice(0, 12);
+//     const ciphertext = encrypted.slice(12);
+//     const ck = await crypto.subtle.importKey(
+//         'raw',
+//         kb,
+//         { name: 'AES-GCM' },
+//         false,
+//         ['decrypt']
+//     );
+//     const decrypted = await crypto.subtle.decrypt(
+//         {
+//             name: 'AES-GCM',
+//             iv: nonce
+//         },
+//         ck,
+//         ciphertext
+//     );
+//     return new TextDecoder().decode(decrypted);
+// }
+
+function decrypt(ks, ed) {
+    const keyBytes = new TextEncoder().encode(ks);
+    if (keyBytes.length !== 16) throw new Error(`Key must be 16 bytes, got ${keyBytes.length}`);
+
+    const bin = atob(ed);
+    const encrypted = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) encrypted[i] = bin.charCodeAt(i);
+
+    const iv = encrypted.slice(0, 12);
     const ciphertext = encrypted.slice(12);
-    const ck = await crypto.subtle.importKey(
-        'raw',
-        kb,
-        { name: 'AES-GCM' },
-        false,
-        ['decrypt']
-    );
-    const decrypted = await crypto.subtle.decrypt(
-        {
-            name: 'AES-GCM',
-            iv: nonce
-        },
-        ck,
-        ciphertext
-    );
-    return new TextDecoder().decode(decrypted);
+
+    const plainBytes = asmCrypto.AES_GCM.decrypt(ciphertext, keyBytes, iv);
+
+    return new TextDecoder().decode(plainBytes);
 }
 
 function updateServerLoad(value) {
@@ -52,11 +68,33 @@ function updateServerLoad(value) {
 	counter.textContent = numeric.toFixed(1) + '%';
 }
 
+// function createCopyButton(textProvider) {
+// 	const btn = document.createElement('button');
+// 	btn.className = 'copyBtn'; btn.type = 'button';
+// 	btn.textContent = '📋';
+// 	btn.addEventListener('click', () => navigator.clipboard.writeText(textProvider()));
+// 	return btn;
+// }
+
 function createCopyButton(textProvider) {
 	const btn = document.createElement('button');
-	btn.className = 'copyBtn'; btn.type = 'button';
+	btn.className = 'copyBtn';
+	btn.type = 'button';
 	btn.textContent = '📋';
-	btn.addEventListener('click', () => navigator.clipboard.writeText(textProvider()));
+
+	btn.addEventListener('click', () => {
+		const text = textProvider();
+		const textArea = document.createElement('textarea');
+		textArea.value = text;
+		document.body.appendChild(textArea);
+		textArea.select();
+		document.execCommand('copy');
+		document.body.removeChild(textArea);
+
+		btn.textContent = '✅';
+		setTimeout(() => btn.textContent = '📋', 1000);
+	});
+
 	return btn;
 }
 
