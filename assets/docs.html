@@ -14,6 +14,7 @@
 	<li><a href="#DocConnXray">Как подключить Xray</a></li>
 	<li><a href="#DocClientsForConn">Клиенты для подключения</a></li>
 	<li><a href="#DocXrayRouting">Xray маршрутизация</a></li>
+	<li><a href="#DocHTTPsOCKS5Proxy">HTTP/SOCKS5 Proxy</a></li>
 	<li><a href="#DocSmartProxy">SmartProxy</a></li>
 </ul>
 
@@ -267,13 +268,20 @@
 	<img src="./assets/v2raytunrouting.png" alt="" width="364px; border-radius: 36px" class="mimg border1 shad">
 </div>
 
+<h3 id="DocHTTPsOCKS5Proxy">HTTP/SOCKS5 Proxy</h3>
+
+<hr>
+
+<p>
+	HTTP и SOCKS5 прокси используются для передачи трафика через промежуточный сервер, скрывая ваш реальный IP-адрес, но HTTP-прокси работают только с веб-трафиком (HTTP/HTTPS), а SOCKS5 — это универсальный протокол, поддерживающий все типы трафика, включая <a href="https://ru.wikipedia.org/wiki/UDP">UDP</a>, что делает его подходящим для онлайн-игр, видеозвонков, почтовых клиентов и других приложений.
+</p>
+
 <h3 id="DocSmartProxy">SmartProxy</h3>
 
 <hr>
 
 <p>
-	<b>SmartProxy</b> — это удобное расширение для браузера, которое позволяет настроить прокси-соединение. В отличие от
-	клиентов Xray, оно использует протокол <b>HTTP Proxy</b>.
+	<b>SmartProxy</b> — это удобное расширение для браузера с открытым исходным кодом, которое позволяет настроить прокси-соединение через <b>HTTP Proxy</b> (SmartProxy не поддерживает SOCKS5 с авторизацией).
 </p>
 
 <p>
@@ -353,6 +361,10 @@
 	Незабудте сохранить изменения.
 </p>
 
+<h4>Фильтры по доменам</h4>
+
+<hr>
+
 <p>
 	В <b>SmartProxy</b> так же возможно настроить подобие маршрутизации. В быстром меню расширения можно отметить домены, которые используют или не используют прокси (зависит от того каком режиме вы находитесь).
 </p>
@@ -360,5 +372,7 @@
 <div class="image-con" style="padding: 14px 21px">
 	<img src="./assets/smartproxyrouting.png" alt="" class="mimg border1 shad">
 </div>
+
+<hr>
 
 <button class="nextBtn" onclick="document.getElementById('get_servers').click()">Сервера →</button>
