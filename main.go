@@ -16,6 +16,7 @@ import (
 
 var (
 	PublicIPAddr string
+	PubVars      map[string]string
 )
 
 const (
@@ -117,6 +118,20 @@ func getTelegramConfig() (string, string, string) {
 
 func main() {
 	loadEnv()
+
+	PubVars = make(map[string]string)
+	envVars := os.Environ()
+	for _, env := range envVars {
+		if strings.HasPrefix(env, "PUBVAR_") {
+			parts := strings.SplitN(env, "=", 2)
+			if len(parts) == 2 {
+				key, _ := strings.CutPrefix(parts[0], "PUBVAR_")
+				value := parts[1]
+				PubVars[key] = value
+			}
+		}
+	}
+
 	config := parseFlags()
 	PublicIPAddr = getPublicIP()
 

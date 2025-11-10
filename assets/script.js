@@ -1,5 +1,7 @@
-
 const loadedSections = {};
+const pubVars = {};
+let pubVarsIsLoad = false;
+let currentSection;
 let serverList = [];
 
 function parseProxyUrl(url) {
@@ -248,6 +250,38 @@ function changePageByUrlHash() {
 	}
 }
 
+async function loadAndSetPubvars() {
+	const setPubvars = () => {
+		const elements = document.querySelectorAll('[has-dv="false"]');
+		elements.forEach(e => {
+			const keyDV = e.getAttribute('key-dv');
+			const tagDV = e.getAttribute('tag-dv');
+			if (keyDV === null) return;
+			const pvar = pubVars[keyDV];
+			if (!pvar) return;
+			e.removeAttribute('key-dv');
+			e.removeAttribute('tag-dv');
+			e.removeAttribute('has-dv');
+			if (tagDV !== null) {
+				e.setAttribute(tagDV, pvar);
+				return;
+			}
+			e.innerHTML = pvar;
+		})
+	}
+	if (!pubVarsIsLoad) {
+		fetch("./pubvars")
+			.then(r => r.text())
+			.then(d => {
+				Object.assign(pubVars, JSON.parse(d));
+				setPubvars();
+				pubVarsIsLoad = true;
+			})
+		return
+	}
+	setPubvars();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 	const links = document.querySelectorAll('nav a');
 	const sections = document.querySelectorAll('main section');
@@ -266,6 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 			section.classList.add('active');
 			if (menu) menu.classList.remove('open');
+			currentSection = section.id;
+			loadAndSetPubvars();
 		});
 	});
 
@@ -277,4 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	changePageByUrlHash();
 
 	window.addEventListener('hashchange', changePageByUrlHash);
+
+	setTimeout(loadAndSetPubvars, 2000);
 });

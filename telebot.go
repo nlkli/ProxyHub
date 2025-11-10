@@ -45,12 +45,23 @@ func RunTelebot(ctx context.Context, stop context.CancelFunc, params *TelebotPar
 		log.Fatalf("Failed to start bot: %v", err)
 	}
 
-	b.SetMyCommands(ctx, &bot.SetMyCommandsParams{
+	_, err = b.SetMyCommands(ctx, &bot.SetMyCommandsParams{
 		Commands: []models.BotCommand{
-			models.BotCommand{
+			{
 				Command:     "client",
 				Description: "👤 Клиент",
 			},
+		},
+	})
+
+	if err != nil {
+		log.Fatalf("Failed to set my commands: %v", err)
+	}
+
+	_, err = b.SetChatMenuButton(ctx, &bot.SetChatMenuButtonParams{
+		ChatID: nil,
+		MenuButton: models.MenuButtonCommands{
+			Type: "commands",
 		},
 	})
 
@@ -249,6 +260,18 @@ func GetClientForUser(ctx context.Context, b *bot.Bot, userID int64) (*models.Me
 					{
 						Text: "🌐 ProxyHub",
 						URL:  serverFullExternalURL,
+					},
+				},
+				{
+					{
+						Text: "💻 Servers",
+						URL:  serverFullExternalURL + "#Servers",
+					},
+				},
+				{
+					{
+						Text: "🍩 Donut",
+						URL:  "https://www.tbank.ru/cf/7rWvJj8BadJ",
 					},
 				},
 				{

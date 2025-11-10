@@ -174,6 +174,11 @@ func RunServer(ctx context.Context, stop context.CancelFunc, params *ServerParam
 
 	mux.HandleFunc(params.Prefix+"/proxyservers", proxyServersInfoHandle)
 
+	mux.HandleFunc(params.Prefix+"/pubvars", func(w http.ResponseWriter, r *http.Request) {
+		data, _ := json.Marshal(&PubVars)
+		fmt.Fprint(w, string(data))
+	})
+
 	assetsPath := filepath.Join(params.Dir, "assets")
 	fs := http.FileServer(http.Dir(assetsPath))
 	mux.Handle(params.Prefix+"/assets/", http.StripPrefix(params.Prefix+"/assets/", fs))
